@@ -23,11 +23,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    LED.getInstance().setState(kStates.kSinWave);
-    LED.getInstance().setMultivariate(0.05);
-    LED.getInstance().setPrimaryColor(Color.kYellow);
-    LED.getInstance().setSecondaryColor(Color.kTurquoise);
-
     // Configure the trigger bindings
     configureBindings();
   }

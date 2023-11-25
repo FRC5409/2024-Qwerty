@@ -71,15 +71,7 @@ LEDSecondColor = table.getIntegerArrayTopic("SECONDARY_COLOR").subscribe([0, 0, 
 
 MultiVariate = table.getDoubleTopic("MULTIVARIATE").subscribe(0)
 
-sensorObject = table.getIntegerTopic("SENSOR_COLOR_STATE").publish()
-
-sensorState = -1
-
-while not inst.isConnected():
-    time.sleep(0.5)
-    sensorObject.set(0)
-    sensorState = 0
-
+sensorObject = table.getIntegerTopic("SENSOR_COLOR_STATE").publish(ntcore.PubSubOptions(keepDuplicates=True))
 
 
 lastState = -1
@@ -207,16 +199,7 @@ def rainbowBlink():
     ]
 
     setLEDColor(rainbow_colors_rgb[(int(LEDTimer)) % len(rainbow_colors_rgb)])
-
-def setSensorEntry(data):
-    global sensorState
-    if sensorState != data:
-        sensorState = data
-        if inst.isConnected():
-            sensorObject.set(data)
-        else:
             
-
 while True:
     if inst.isConnected():
         lastState = state
@@ -256,16 +239,17 @@ while True:
 
         if currentColor[0] > currentColor[2] * BLUE_TO_RED_RATIO:
             # Red object detected
-            setSensorEntry(1)
+            print(True)
+            sensorObject.set(1)
             if not inst.isConnected():
                 setLEDColor(Color(255, 0, 0))
         else:
             # Blue object detected
-            setSensorEntry(2)
+            sensorObject.set(2)
             if not inst.isConnected():
                 setLEDColor(Color(0, 0, 255))
     else:
-        setSensorEntry(0)
+        sensorObject.set(0)
 
     # Display color
     # setLEDColor(

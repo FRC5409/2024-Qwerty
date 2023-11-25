@@ -10,7 +10,7 @@ import frc.robot.Utils.NT4;
 public class LED extends SubsystemBase {
 
     public enum kStates {
-        kSolid(0), kBlink(1), kSinWave(2), kSinFlow(3), kRainbowCycle(4), kRainbowBlink(5);
+        kSolid(0), kBlink(1), kSinWave(2), kSinFlow(3), kRainbowCycle(4), kRainbowBlink(5), kDefualt(-1);
 
         kStates(int value) {
             state = value;
