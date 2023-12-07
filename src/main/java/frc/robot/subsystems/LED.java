@@ -162,8 +162,11 @@ public class LED extends SubsystemBase {
         if (IRSensor.getInstance().inRange()) setPrimaryColor(Color.kGreen);
         else                                  setPrimaryColor(Color.kPureRed);
 
-        if (getSensorColorState() == 0) setSecondaryColor(Color.kBlack);
-        if (getSensorColorState() == 1) setSecondaryColor(Color.kDarkRed);
+        // Weird bug where it doesnt switch to black ???
+        if (getSensorColorState() == 0) setSecondaryColor(Color.kDarkGray);
+        else
+        if (getSensorColorState() == 1) setSecondaryColor(Color.kDarkPurple);
+        else
         if (getSensorColorState() == 2) setSecondaryColor(Color.kDarkBlue);
     }
 
