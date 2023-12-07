@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.IntegerSubscriber;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utils.Color;
@@ -22,7 +23,7 @@ public class LED extends SubsystemBase {
     private static LED instance = null;
 
     private final ShuffleboardTab sb_tab;
-    private final GenericEntry sb_colorState;
+    private final IntegerSubscriber sb_colorState;
 
     private final Color primaryColor;
     private final Color secondaryColor;
@@ -37,7 +38,7 @@ public class LED extends SubsystemBase {
     private double rainbowBlinkSpeed = 0.5;
 
     private LED() {
-        state = kStates.kSinWave;
+        state = kStates.kSinFlow;
         multivariate = -1;
         primaryColor = Color.kGold;
         secondaryColor = Color.kBlack;
@@ -48,7 +49,9 @@ public class LED extends SubsystemBase {
         sb_tab.addIntegerArray("SECONDARY_COLOR", () -> Convert.intToLong(getSecondaryColor()));
         sb_tab.addDouble("MULTIVARIATE", () -> getMultivariate());
 
-        sb_colorState = sb_tab.add("SENSOR_COLOR_STATE", -1).getEntry();
+        // sb_colorState = sb_tab.add("SENSOR_COLOR_STATE", -1).getEntry();
+        // sb_colorState = sb_tab.addPersistent("SENSOR_COLOR_STATE", -1).getEntry();
+        sb_colorState = NetworkTableInstance.getDefault().getTable("Shuffleboard").getSubTable("LED_COMMUNICATION_TAB").getIntegerTopic("SENSOR_COLOR_STATE").subscribe(-1);
     }
 
     // Get subsystem
@@ -150,15 +153,18 @@ public class LED extends SubsystemBase {
      * Gets the REV Color Sensor V3 in from the raspi using I2C
      */
     public int getSensorColorState() {
-        return (int) sb_colorState.getInteger(-1);
+        return (int) sb_colorState.get();
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        if (getSensorColorState() == 0) changeLED(kStates.kSinFlow, Color.kYellow, Color.kDarkTurquoise);
-        if (getSensorColorState() == 1) changeLED(kStates.kSolid, Color.kPureRed, Color.kRed);
-        if (getSensorColorState() == 2) changeLED(kStates.kSolid, Color.kPureBlue, Color.kBlue);
+        if (IRSensor.getInstance().inRange()) setPrimaryColor(Color.kGreen);
+        else                                  setPrimaryColor(Color.kPureRed);
+
+        if (getSensorColorState() == 0) setSecondaryColor(Color.kBlack);
+        if (getSensorColorState() == 1) setSecondaryColor(Color.kDarkRed);
+        if (getSensorColorState() == 2) setSecondaryColor(Color.kDarkBlue);
     }
 
     @Override

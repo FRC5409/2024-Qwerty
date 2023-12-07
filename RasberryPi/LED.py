@@ -7,7 +7,7 @@ import ColorSensor
 
 # ssh pi@chargerspi.local
 # frc5409
-# scp C:\Users\aslsz\OneDrive\Documents\Github\2023-Qwerty\RasberryPi\LED.py pi@chargerspi.local:
+# scp RasberryPi\LED.py pi@chargerspi.local:
 # sudo python LED.py
 
 BLUE_TO_RED_RATIO = 2.8
@@ -71,7 +71,7 @@ LEDSecondColor = table.getIntegerArrayTopic("SECONDARY_COLOR").subscribe([0, 0, 
 
 MultiVariate = table.getDoubleTopic("MULTIVARIATE").subscribe(0)
 
-sensorObject = table.getIntegerTopic("SENSOR_COLOR_STATE").publish(ntcore.PubSubOptions(keepDuplicates=True))
+sensorObject = table.getIntegerTopic("SENSOR_COLOR_STATE").publish()
 
 
 lastState = -1
@@ -139,7 +139,7 @@ def sinWave():
     LEDTimer += SIN_SPEED
 
     for i in range(0, LED_COUNT):
-        if (((i + LEDTimer) % (SIN_COUNT * 2)) <= SIN_COUNT):
+        if ((i + LEDTimer) % (SIN_COUNT * 2)) <= SIN_COUNT:
             setLEDColorAt(i, primaryColor)
         else:
             setLEDColorAt(i, secondaryColor)
@@ -239,17 +239,16 @@ while True:
 
         if currentColor[0] > currentColor[2] * BLUE_TO_RED_RATIO:
             # Red object detected
-            print(True)
-            sensorObject.set(1)
+            sensorObject.set(1, ntcore._now())
             if not inst.isConnected():
                 setLEDColor(Color(255, 0, 0))
         else:
             # Blue object detected
-            sensorObject.set(2)
+            sensorObject.set(2, ntcore._now())
             if not inst.isConnected():
                 setLEDColor(Color(0, 0, 255))
     else:
-        sensorObject.set(0)
+        sensorObject.set(0, ntcore._now())
 
     # Display color
     # setLEDColor(

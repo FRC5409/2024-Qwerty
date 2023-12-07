@@ -390,9 +390,11 @@ class ColorSensorV3:
 
     def _read20BitRegister(self, reg: Register) -> int:
         count, raw = pi.i2c_read_i2c_block_data(self.i2c, reg, 3)
-
-        return ((raw[0] & 0xFF) | ((raw[1] & 0xFF) << 8) |
+        try:
+            return ((raw[0] & 0xFF) | ((raw[1] & 0xFF) << 8) |
                 ((raw[2] & 0xFF) << 16)) & 0x03FFFF
+        except:
+            return
 
     def _write8(self, reg: Register, data: int):
         pi.i2c_write_byte_data(self.i2c, reg, data)
@@ -406,3 +408,4 @@ def getBrightness():
 def getCurrentColor():
     return [sensor1.getColor().red, sensor1.getColor().green, sensor1.getColor().blue]
 
+# scp RasberryPi\ColorSensor.py pi@chargerspi.local:
