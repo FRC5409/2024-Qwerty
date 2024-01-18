@@ -5,13 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Utils.Color;
-import frc.robot.Utils.Controller;
 import frc.robot.subsystems.LED;
-import frc.robot.subsystems.LED.kStates;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -23,6 +19,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    LED.getInstance();
+
     // Configure the trigger bindings
     configureBindings();
   }
@@ -37,17 +35,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-
-    Controller.getPort(0).rightBumper().onTrue(
-      Commands.runOnce(() -> 
-        LED.getInstance().changeLED(
-          kStates.kBlink,
-          Color.kYellow,
-          Color.kRed
-        ), 
-        LED.getInstance()
-      )
-    );
     
   }
 

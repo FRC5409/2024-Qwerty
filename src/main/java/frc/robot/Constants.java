@@ -14,11 +14,26 @@ package frc.robot;
  */
 public final class Constants {
 
-  public static class OperatorConstants {
+  public static final class OperatorConstants {
 
     //Joystick Ports
     public static final int kPrimaryControllerPort = 0;
     public static final int kSecondaryControllerPort = 1;
 
+  }
+
+  public static final class kLED {
+    public static final int LEDCount = 60;
+
+    public static final int BLINK_SPEED = 5; // in REFRESH_TIME intervals
+ 
+    public static final int SIN_COUNT = 8;
+    public static final double SIN_SPEED = 0.5;
+
+    public static final double SIN_HS = 0.05;
+    public static final double SIN_VS = 30.0;
+
+    public static final double RAINBOW_CYCLE_SPEED = 0.5;   // negative speed to reverse
+    public static final double RAINBOW_BLINK_SPEEED = 0.5; // negative speed to reverse
   }
 }

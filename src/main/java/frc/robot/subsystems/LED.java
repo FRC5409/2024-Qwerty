@@ -1,19 +1,20 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+// 5409: The Chargers
+// http://github.com/FRC5409
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.kLED;
 import frc.robot.Utils.Color;
-import frc.robot.Utils.Convert;
-import frc.robot.Utils.NT4;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
 public class LED extends SubsystemBase {
 
-    public enum kStates {
-        kSolid(0), kBlink(1), kSinWave(2), kSinFlow(3), kRainbowCycle(4), kRainbowBlink(5), kDefualt(-1);
+    public enum State {
+        kSolid(0), kBlink(1), kSinWave(2), kSinFlow(3), kRainbowCycle(4), kRainbowBlink(5);
 
-        kStates(int value) {
+        State(int value) {
             state = value;
         }
 
@@ -22,36 +23,37 @@ public class LED extends SubsystemBase {
 
     private static LED instance = null;
 
-    private final ShuffleboardTab sb_tab;
-    private final IntegerSubscriber sb_colorState;
+    private final AddressableLED led;
+    private final AddressableLEDBuffer buffer;
 
-    private final Color primaryColor;
-    private final Color secondaryColor;
+    private State state;
+    
+    private Color primeColor;
+    private Color secondColor;
 
-    private kStates state;
-
-    private double multivariate;
-
-    private double blinkSpeed        = 0.25;
-    private double sinSpeed          = 0.5;
-    private double rainbowCycleSpeed = 0.5;
-    private double rainbowBlinkSpeed = 0.5;
+    private double LEDTimer = 0.0;
+    private double animationTime = 0.0;
 
     private LED() {
-        state = kStates.kSinFlow;
-        multivariate = -1;
-        primaryColor = Color.kGold;
-        secondaryColor = Color.kBlack;
+        led = new AddressableLED(0);
+        buffer = new AddressableLEDBuffer(kLED.LEDCount);
+        
+        led.setLength(buffer.getLength());
 
-        sb_tab = NT4.getInstance("LED_COMMUNICATION_TAB");
-        sb_tab.addInteger("STATE", () -> getState().state);
-        sb_tab.addIntegerArray("PRIMARY_COLOR", () -> Convert.intToLong(getPrimaryColor()));
-        sb_tab.addIntegerArray("SECONDARY_COLOR", () -> Convert.intToLong(getSecondaryColor()));
-        sb_tab.addDouble("MULTIVARIATE", () -> getMultivariate());
+        led.setData(buffer);
+        led.start();
 
-        // sb_colorState = sb_tab.add("SENSOR_COLOR_STATE", -1).getEntry();
-        // sb_colorState = sb_tab.addPersistent("SENSOR_COLOR_STATE", -1).getEntry();
-        sb_colorState = NetworkTableInstance.getDefault().getTable("Shuffleboard").getSubTable("LED_COMMUNICATION_TAB").getIntegerTopic("SENSOR_COLOR_STATE").subscribe(-1);
+        setState(State.kSolid, Color.kPureRed, Color.kBlack);
+
+        reset();
+    }
+
+    public void setState(State state, Color prime, Color second) {
+        this.state = state;
+        primeColor = prime;
+        secondColor = second;
+
+        reset();
     }
 
     // Get subsystem
@@ -61,113 +63,128 @@ public class LED extends SubsystemBase {
         return instance;
     }
 
-    /**
-     * Sets the current LED State
-     */
-    public void setState(kStates state) {
-        this.state = state;
-    }
-
-    /**
-     * Gets the current LED State
-     */
-    public kStates getState() {
-        return state;
-    }
-
-    /**
-     * Sets the primary color to a three long int array
-     */
-    public void setPrimaryColor(int[] color) {
-        primaryColor.setColor(color[0], color[1], color[2]);
-    }
-
-    /**
-     * Sets the primary color to a color object
-     */
-    public void setPrimaryColor(Color color) {
-        primaryColor.setColor(color);
-    }
-
-    /**
-     * Sets the secondary color to a three long int array
-     */
-    public void setSecondaryColor(int[] color) {
-        secondaryColor.setColor(color[0], color[1], color[2]);
-    }
-
-    /**
-     * Sets the secondary color to a color object
-     */
-    public void setSecondaryColor(Color color) {
-        secondaryColor.setColor(color);
-    }
-
-    /**
-     * Returns the primary color as an int array
-     */
-    public int[] getPrimaryColor() {
-        return primaryColor.getColor();
-    }
-
-    /**
-     * Returns the secondary color as an int array
-     */
-    public int[] getSecondaryColor() {
-        return secondaryColor.getColor();
-    }
-
-    /**
-     * Sets the multivariate var to parameter
-     * This for example changes the blinking speed on LEDs when the LEDs state is set to kBlink
-     */
-    public void setMultivariate(double val) {
-        multivariate = val;
-    }
-
-    /**
-     * Get the multivariate
-     */
-    public double getMultivariate() {
-        double var;
-
-        if (state.state == kStates.kBlink.state)          var = blinkSpeed;
-        if (state.state == kStates.kSinWave.state)        var = sinSpeed;
-        if (state.state == kStates.kRainbowCycle.state)   var = rainbowCycleSpeed;
-        if (state.state == kStates.kRainbowBlink.state)   var = rainbowBlinkSpeed;
-        else 
-        var = -1;
-
-        multivariate = var;
-
-        return multivariate;
-    }
-
-    public void changeLED(kStates state, Color primary, Color secondary) {
-        setState(state);
-        setPrimaryColor(primary);
-        setSecondaryColor(secondary);
-    }
-
-    /**
-     * Gets the REV Color Sensor V3 in from the raspi using I2C
-     */
-    public int getSensorColorState() {
-        return (int) sb_colorState.get();
-    }
-
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        if (IRSensor.getInstance().inRange()) setPrimaryColor(Color.kGreen);
-        else                                  setPrimaryColor(Color.kPureRed);
 
-        // Weird bug where it doesnt switch to black ???
-        if (getSensorColorState() == 0) setSecondaryColor(Color.kDarkGray);
-        else
-        if (getSensorColorState() == 1) setSecondaryColor(Color.kDarkPurple);
-        else
-        if (getSensorColorState() == 2) setSecondaryColor(Color.kDarkBlue);
+        switch (state) {
+            case kBlink:
+                blinkLED();
+                break;
+            case kRainbowBlink:
+                rainbowBlink();
+                break;
+            case kRainbowCycle:
+                rainbowCycle();
+                break;
+            case kSinFlow:
+                sinFlow();
+                break;
+            case kSinWave:
+                sinWave();
+                break;
+            case kSolid:
+                setLEDColor(primeColor);
+                break;
+        }
+        
+        led.setData(buffer);
+    }
+
+    public void reset() {
+        LEDTimer = 0.0;
+        animationTime = 0.0;
+    }
+
+    public void setLEDColor(Color color) {
+        for (int i = 0; i < kLED.LEDCount; i++) {
+            setLEDColorAt(color, i);
+        }
+    }
+
+    public void setLEDColorAt(Color color, int index) {
+        buffer.setRGB(index, color.red, color.green, color.blue);
+    }    
+
+    public void blinkLED() {
+        if (LEDTimer <= kLED.BLINK_SPEED) {
+            setLEDColor(primeColor);
+        } else if (LEDTimer <= kLED.BLINK_SPEED * 2) {
+            setLEDColor(secondColor);
+        } else {
+            LEDTimer = 0.0;
+            animationTime = 0;
+            return;
+        }
+
+        LEDTimer++;
+    }
+
+    // sinWave LED function (Doesn't actually use the sin function named it after Lex's function)
+    public void sinWave() {
+        LEDTimer += kLED.SIN_SPEED;
+
+        for (int i = 0; i < kLED.LEDCount; i++) {
+            if (((i + LEDTimer) % (kLED.SIN_COUNT * 2)) <= kLED.SIN_COUNT) {
+                setLEDColorAt(primeColor, i);
+            } else {
+                setLEDColorAt(secondColor, i);
+            }
+        }
+    }
+
+    // sinFlow LED function, alternates the movement in a Sin fasion, closely related to the sineWave LED function
+    public void sinFlow() {
+        LEDTimer++;
+
+        animationTime = Math.sin(LEDTimer * kLED.SIN_HS) * kLED.SIN_VS;
+
+        // Makes the function smoother
+        if (Math.abs(animationTime) >= kLED.SIN_VS - 0.5) LEDTimer += 2;
+        
+        animationTime = Math.floor(animationTime);
+
+        for (int i = -kLED.SIN_COUNT; i < kLED.LEDCount + kLED.SIN_COUNT; i++) {
+            if (((i + animationTime) % (kLED.SIN_COUNT * 2)) <= kLED.SIN_COUNT) {
+                if (i >= 0 & i < kLED.LEDCount) setLEDColorAt(primeColor, i);
+            } else {
+                if (i >= 0 & i < kLED.LEDCount) setLEDColorAt(secondColor, i);
+            }
+        }
+    }
+
+    // rainbowCycle LED function is a rainbow on the LEDs that moves based on the specified speed
+    public void rainbowCycle() {
+        LEDTimer -= kLED.RAINBOW_CYCLE_SPEED;
+
+        Color[] colors = {
+            new Color(255, 0, 0),      // Red
+            new Color(255, 69, 0),     // Orange
+            new Color(255, 255, 0),    // Yellow
+            new Color(0, 255, 0),      // Green
+            new Color(0, 0, 255),      // Blue
+            new Color(138, 43, 226)    // Violet
+        };
+
+        for (int i = 0; i < kLED.LEDCount; i++) {
+            setLEDColorAt(colors[(int) (LEDTimer + i) % colors.length], i);
+        }
+    }
+
+// rainbowBlink LED function cycles through the LEDs and sets the color of all the LEDs to the curret rainbow color
+public void rainbowBlink() {
+        LEDTimer += kLED.RAINBOW_BLINK_SPEEED;
+
+        Color[] colors = {
+            new Color(255, 0, 0),      // Red
+            new Color(255, 69, 0),     // Orange
+            new Color(255, 255, 0),    // Yellow
+            new Color(0, 255, 0),      // Green
+            new Color(0, 0, 255),      // Blue
+            new Color(138, 43, 226)    // Violet
+        };
+
+        setLEDColor(colors[((int) LEDTimer) % colors.length]);
     }
 
     @Override
