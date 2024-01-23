@@ -5,9 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.LED;
+import frc.robot.Utils.Controller;
+import frc.robot.subsystems.Shooter;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -17,9 +20,13 @@ import frc.robot.subsystems.LED;
  */
 public class RobotContainer {
 
+  private final Shooter sys_shooter;
+  private final Controller joystickMain;
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    LED.getInstance();
+    sys_shooter = Shooter.getInstance();
+    joystickMain = Controller.getPort(0);
 
     // Configure the trigger bindings
     configureBindings();
@@ -35,7 +42,9 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    
+    joystickMain.leftBumper()
+      .whileTrue(Commands.runOnce(() -> sys_shooter.setSpeed(-0.05), sys_shooter))
+      .onFalse(sys_shooter.shoot());
   }
 
   /**
