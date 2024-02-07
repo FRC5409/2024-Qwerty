@@ -23,7 +23,7 @@ public final class Constants {
   }
 
   public static final class kLED {
-    public static final int LEDCount = 60;
+    public static final int LEDCount = 30;
 
     public static final int BLINK_SPEED = 5; // in REFRESH_TIME intervals
  

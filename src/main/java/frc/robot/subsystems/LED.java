@@ -43,7 +43,7 @@ public class LED extends SubsystemBase {
         led.setData(buffer);
         led.start();
 
-        setState(State.kSolid, Color.kPureRed, Color.kBlack);
+        setState(State.kSinFlow, Color.kCyan, Color.kBlack);
 
         reset();
     }
