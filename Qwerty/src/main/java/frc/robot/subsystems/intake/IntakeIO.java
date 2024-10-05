@@ -22,7 +22,7 @@ public interface IntakeIO {
         public void fromLog(LogTable table) {
             isIntaking = table.get("isIntaking", false);
             appliedVoltage = table.get("appliedVoltage", 0.0);
-            intakeVelocity = table.get("intakeVelocity", intakeVelocity);
+            intakeVelocity = table.get("intakeVelocity", 0.0);
             motorCurrent = table.get("motorCurrent", 0.0);
             motorTemp = table.get("motorTemp", 0.0);
         }

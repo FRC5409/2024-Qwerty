@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSparkMAX;
@@ -20,6 +21,7 @@ import frc.robot.subsystems.intake.IntakeIOSparkMAX;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+  private final Drive sys_drive;
   private final Intake sys_intake;
 
   private final CommandXboxController m_primaryController = new CommandXboxController(0);
@@ -28,8 +30,10 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     if (RobotBase.isReal()) {
+      sys_drive = Drive.getInstance();
       sys_intake = Intake.createInstance(new IntakeIOSparkMAX(1));
     } else {
+      sys_drive = Drive.getInstance();
       sys_intake = Intake.createInstance(new IntakeIO() {});
     }
 

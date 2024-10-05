@@ -13,5 +13,7 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  
+  public static class kDrive {
+    public static final int CURRENT_LIMIT = 60;
+  }
 }
