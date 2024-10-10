@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -13,5 +16,25 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  
+
+    public static enum kMode {
+        REAL,
+        DEMO,
+        REPLAY,
+        SIM
+    }
+
+    public static final kMode REAL_MODE = kMode.REAL;
+    public static final kMode SIM_MODE = kMode.REPLAY;
+
+    public static kMode getMode() {
+        if (RobotBase.isReal())
+            return DriverStation.isFMSAttached() ? kMode.REAL : REAL_MODE;
+        else 
+            return SIM_MODE;
+    }
+
+    public static final class kDrive {
+        public static final double CURRENT_LIMIT = 60.0;
+    }
 }

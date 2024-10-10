@@ -8,12 +8,14 @@ import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.rlog.RLOGServer;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.kMode;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -36,15 +38,17 @@ public class Robot extends LoggedRobot {
 
     Logger.recordMetadata("Qwerty", "Qwerty's kit");
 
-    if (isReal()) {
+    if (Constants.getMode() == kMode.REAL) {
       Logger.addDataReceiver(new WPILOGWriter());
       Logger.addDataReceiver(new NT4Publisher());
       new PowerDistribution(1, ModuleType.kRev); // Requires a close not sure if this is important will look into it later
-    } else {
+    } else if (Constants.getMode() == kMode.REPLAY) {
       setUseTiming(false);
       String logPath = LogFileUtil.findReplayLog();
       Logger.setReplaySource(new WPILOGReader(logPath));
       Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+    } else if (Constants.getMode() == kMode.SIM) {
+      Logger.addDataReceiver(new RLOGServer());
     }
 
     Logger.start();

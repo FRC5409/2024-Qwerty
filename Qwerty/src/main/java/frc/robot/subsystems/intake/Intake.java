@@ -1,7 +1,7 @@
 package frc.robot.subsystems.intake;
 
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -9,12 +9,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 // http://github.com/FRC5409
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.intake.IntakeIO.IntakeIOInputs;
 
 public class Intake extends SubsystemBase {
 
     private final IntakeIO io;
-    private final IntakeIOInputs inputs = new IntakeIOInputs();
+    private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
     private static Intake instance = null;
 
@@ -35,8 +34,12 @@ public class Intake extends SubsystemBase {
         return instance;
     }
 
+    public Command variableVoltage(DoubleSupplier voltage) {
+        return Commands.run(() -> io.setVoltage(voltage.getAsDouble()), this);
+    }
+
     public Command runIntake() {
-        return Commands.runOnce(() -> io.setVoltage(8.0), this);
+        return Commands.runOnce(() -> io.setVoltage(2.0), this);
     }
 
     public Command stopIntake() {

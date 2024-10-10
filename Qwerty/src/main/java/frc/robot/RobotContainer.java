@@ -4,10 +4,14 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.kMode;
+import frc.robot.subsystems.drive.Gyro;
+import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.Pigeon2IO;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSparkMAX;
@@ -20,18 +24,27 @@ import frc.robot.subsystems.intake.IntakeIOSparkMAX;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+  private final Gyro sys_gyro;
   private final Intake sys_intake;
 
   private final CommandXboxController m_primaryController = new CommandXboxController(0);
+  private final CommandXboxController m_secondaryController = new CommandXboxController(1);
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    if (RobotBase.isReal()) {
-      sys_intake = Intake.createInstance(new IntakeIOSparkMAX(1));
+    if (Constants.getMode() == kMode.REAL) {
+      sys_intake = Intake.createInstance(new IntakeIOSparkMAX(3));
+      sys_gyro = Gyro.createInstance(new Pigeon2IO(14));
+    } else if (Constants.getMode() == kMode.REPLAY) {
+      sys_intake = Intake.createInstance(new IntakeIO() {});
+      sys_gyro = Gyro.createInstance(new GyroIO() {});
     } else {
       sys_intake = Intake.createInstance(new IntakeIO() {});
+      sys_gyro = Gyro.createInstance(new GyroIO() {});
     }
+
+    sys_intake.setDefaultCommand(sys_intake.variableVoltage(m_secondaryController::getRightTriggerAxis));
 
     // Configure the trigger bindings
     configureBindings();
@@ -47,6 +60,8 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     m_primaryController.x()
       .onTrue(sys_intake.runIntake())
       .onFalse(sys_intake.stopIntake());
